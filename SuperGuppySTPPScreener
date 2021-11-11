@@ -1,0 +1,568 @@
+//@version=4
+study("SuperGuppySTPPScreener", overlay = false)
+
+
+anchor     = input(0,minval=0,maxval=1440,title="Use Alternate Anchor TimeFrame (0=none, max=1440 (mins,D,W)")
+//
+src =  input(close, title="EMA Source")
+ShowBreak = input(true,title="Show Trend Break Arrow Alerts")
+ShowSwing = input(true,title="Show Swing Arrow Alerts")
+ShowCon   = input(false,title="Give Only Fast+Slow Confluence Alerts")
+uOCCswing = input(false,title="Add Bar Colour Changes to Swing Alerts")
+Lookback  = input(6,title="Alert Lookback Length")
+ShowAvgs  = input(false,title="Show Average Fast and Slow Guppy Curves")
+show200   = input(false,title="Show 200 EMA Curve")
+emaFilter = input(false,title="Filter Alerts with 200ema")
+clrBars   = input(false,title="Colour Candles to Guppy Trend state")
+
+//
+//Fast EMAs
+lenF1 = input(3, minval=1, title="Fast EMA 1")
+lenF2 = input(5, minval=1, title="Fast EMA 2")
+lenF3 = input(7, minval=1, title="Fast EMA 3")
+lenF4 = input(9, minval=1, title="Fast EMA 4")
+lenF5 = input(11, minval=1, title="Fast EMA 5")
+lenF6 = input(13, minval=1, title="Fast EMA 6")
+lenF7 = input(15, minval=1, title="Fast EMA 7")
+lenF8 = input(17, minval=1, title="Fast EMA 8")
+lenF9 = input(19, minval=1, title="Fast EMA 9")
+lenF10 = input(21, minval=1, title="Fast EMA 10")
+lenF11 = input(23, minval=1, title="Fast EMA 11")
+
+//Slow EMAs
+lenS1 = input(25, minval=1, title="Slow EMA 1")
+lenS2 = input(28, minval=1, title="Slow EMA 2")
+lenS3 = input(31, minval=1, title="Slow EMA 3")
+lenS4 = input(34, minval=1, title="Slow EMA 4")
+lenS5 = input(37, minval=1, title="Slow EMA 5")
+lenS6 = input(40, minval=1, title="Slow EMA 6")
+lenS7 = input(43, minval=1, title="Slow EMA 7")
+lenS8 = input(46, minval=1, title="Slow EMA 8")
+lenS9 = input(49, minval=1, title="Slow EMA 9")
+lenS10 = input(52, minval=1, title="Slow EMA 10")
+lenS11 = input(55, minval=1, title="Slow EMA 11")
+lenS12 = input(58, minval=1, title="Slow EMA 12")
+lenS13 = input(61, minval=1, title="Slow EMA 13")
+lenS14 = input(64, minval=1, title="Slow EMA 14")
+lenS15 = input(67, minval=1, title="Slow EMA 15")
+lenS16 = input(70, minval=1, title="Slow EMA 16")
+
+len    = input(200, minval=1, title="EMA 200 Length")
+
+gold = #FFD700
+AQUA = #00FFFFFF
+BLUE = #0000FFFF
+GRAY = #808080FF
+
+
+//Fast EMA
+emaF1 = ema(src, lenF1)
+emaF2 = ema(src, lenF2)
+emaF3 = ema(src, lenF3)
+emaF4 = ema(src, lenF4)
+emaF5 = ema(src, lenF5)
+emaF6 = ema(src, lenF6)
+emaF7 = ema(src, lenF7)
+emaF8 = ema(src, lenF8)
+emaF9 = ema(src, lenF9)
+emaF10 = ema(src, lenF10)
+emaF11 = ema(src, lenF11)
+//average
+emafast = (emaF1 + emaF2 + emaF3 + emaF4 + emaF5 + emaF6 + emaF7 + emaF8 + emaF9 + emaF10 + emaF11)/11
+//
+//Slow EMA
+emaS1 = ema(src, lenS1)
+emaS2 = ema(src, lenS2)
+emaS3 = ema(src, lenS3)
+emaS4 = ema(src, lenS4)
+emaS5 = ema(src, lenS5)
+emaS6 = ema(src, lenS6)
+emaS7 = ema(src, lenS7)
+emaS8 = ema(src, lenS8)
+emaS9 = ema(src, lenS9)
+emaS10 = ema(src, lenS10)
+emaS11 = ema(src, lenS11)
+emaS12 = ema(src, lenS12)
+emaS13 = ema(src, lenS13)
+emaS14 = ema(src, lenS14)
+emaS15 = ema(src, lenS15)
+emaS16 = ema(src, lenS16)
+// average
+emaslow = (emaS1 + emaS2 + emaS3 + emaS4 + emaS5 + emaS6 + emaS7 + emaS8 + 
+          emaS9 + emaS10 + emaS11 + emaS12 + emaS13 + emaS14 + emaS15 + emaS16)/16
+//
+//EMA 200
+ema200 = ema(src, len)
+
+//Fast EMA Color Rules
+colfastL = (emaF1>emaF2 and emaF2>emaF3 and emaF3>emaF4 and emaF4>emaF5 and emaF5>emaF6 and emaF6>emaF7 and emaF7>emaF8 and emaF8>emaF9 and emaF9>emaF10 and emaF10>emaF11)
+colfastS = (emaF1<emaF2 and emaF2<emaF3 and emaF3<emaF4 and emaF4<emaF5 and emaF5<emaF6 and emaF6<emaF7 and emaF7<emaF8 and emaF8<emaF9 and emaF9<emaF10 and emaF10<emaF11)
+//Slow EMA Color Rules
+colslowL = (emaS1>emaS2 and emaS2>emaS3 and emaS3>emaS4 and emaS4>emaS5 and emaS5>emaS6 and emaS6>emaS7 and emaS7>emaS8) and
+           (emaS8>emaS9 and emaS9>emaS10 and emaS10>emaS11 and emaS11>emaS12 and emaS12>emaS13 and emaS13>emaS14 and emaS14>emaS15 and emaS15>emaS16)
+colslowS = (emaS1<emaS2 and emaS2<emaS3 and emaS3<emaS4 and emaS4<emaS5 and emaS5<emaS6 and emaS6<emaS7 and emaS7<emaS8) and
+           (emaS8<emaS9 and emaS9<emaS10 and emaS10<emaS11 and emaS11<emaS12 and emaS12<emaS13 and emaS13<emaS14 and emaS14<emaS15 and emaS15<emaS16)
+
+//Fast EMA Final Color Rules
+colFinal = colfastL and emaS1>emaS16 ? color.aqua : colfastS and emaS1<emaS16 ? color.blue : color.gray
+//Slow EMA Final Color Rules
+colFinal2 = colslowL  ? color.lime : colslowS ? color.red : color.gray
+
+c = colfastL and emaS1>emaS16 ? AQUA : colfastS and emaS1<emaS16 ? BLUE : GRAY
+barcolor(clrBars? c : na,title="Guppy Bar Colors")
+
+
+
+preLong1 = colFinal == color.gray and colFinal2 == color.lime
+preLong2 = colFinal == color.aqua and colFinal2 == color.gray
+preShort1 = colFinal == color.gray and colFinal2 == color.red
+preShort2 = colFinal == color.blue and colFinal2 == color.gray
+long = colFinal == color.aqua and colFinal2 == color.lime
+short = colFinal == color.blue and colFinal2 == color.red
+
+
+
+//CONDITION
+cond = preLong1[0] ? 2 : preLong2[0] ? 2 : preShort1[0] ? -2 : preShort2[0] ? -2 : long[0] ? 1 : short[0] ? -1 :0
+
+
+
+//////////////////////////
+//SuperTrend + Pivot Point
+//////////////////////////
+
+
+
+
+PPprd = input(defval = 2, title="Pivot Point Period", minval = 1, maxval = 50)
+AtrFactor=input(defval = 3, title = "ATR Factor", minval = 1, step = 0.1)
+AtrPd=input(defval = 10, title = "ATR Period", minval=1)
+
+
+
+    
+
+
+        
+        
+sp() =>
+    float ph = na
+    float pl = na
+    ph := pivothigh(PPprd, PPprd)
+    pl := pivotlow(PPprd, PPprd)
+
+    float center = na
+    center := center[1]
+    float lastpp = ph ? ph : pl ? pl : na
+    if lastpp
+        if na(center)
+            center := lastpp
+        else
+            center := (center * 2 + lastpp) / 3
+    Up = center - (AtrFactor * atr(AtrPd))
+    Dn = center + (AtrFactor * atr(AtrPd))
+
+    float TUp = na
+    float TDown = na
+    Trend = 0
+    TUp := close[1] > TUp[1] ? max(Up, TUp[1]) : Up
+    //TUp := close > TUp ? max(Up, TUp) : Up
+    TDown := close[1] < TDown[1] ? min(Dn, TDown[1]) : Dn
+    //TDown := close < TDown ? min(Dn, TDown) : Dn
+    Trend := close > TDown[1] ? 1: close < TUp[1]? -1: nz(Trend[1], 1)
+    //Trend := close > TDown ? 1: close < TUp? -1: nz(Trend, 1)
+    Trailingsl = Trend == 1 ? TUp : TDown
+
+
+    //bsignalSSPP = Trend == 1 and Trend[1] == -1
+    bsignalSSPP = close > Trailingsl
+    //ssignalSSPP = Trend == -1 and Trend[1] == 1
+    ssignalSSPP = close < Trailingsl
+    
+    condSSPP_ = Trailingsl > close ? -1 : na
+    [condSSPP_]
+
+[condSSPP_] = sp()
+
+
+
+
+
+
+//Supertrend(factor, period) => 
+//    [supertrend, trend] = supertrend(factor, period)
+//    color_ = trend == 1 ? #b71c1cFF : #1b5e20FF
+//    [color_]
+
+//[color_] = Supertrend(factor, period)
+
+
+
+
+
+s01 = input('BINANCE:BTCEUR',  type=input.symbol)
+s02 = input('BINANCE:ETHEUR',  type=input.symbol)
+s03 = input('BINANCE:VETUSDT',  type=input.symbol) //VETUSDT
+s04 = input('BINANCE:XMRUSDT',  type=input.symbol)
+s05 = input('BINANCE:RVNUSDT',  type=input.symbol) //RVNBTC
+
+s06 = input('BINANCE:LTCUSDT',  type=input.symbol) //LTCBTC
+s07 = input('BINANCE:LINKUSDT',  type=input.symbol) //LINKBTC
+s08 = input('BINANCE:IOSTUSDT',  type=input.symbol)
+s09 = input('BINANCE:DOGEUSDT',  type=input.symbol) //DOGEBTC
+s10 = input('BINANCE:ETHUSDT',  type=input.symbol)
+
+s11 = input('BINANCE:XLMUSDT',  type=input.symbol) //XLMBTC
+s12 = input('BINANCE:XRPUSDT',  type=input.symbol) //XRPEUR
+s13 = input('BINANCE:BNBUSDT',  type=input.symbol) //BNBBTC
+s14 = input('BINANCE:NEOUSDT',  type=input.symbol)
+s15 = input('BINANCE:ADAUSDT',  type=input.symbol) //ADAEUR
+
+s16 = input('BINANCE:TRXUSDT',  type=input.symbol) //TRXBTC
+s17 = input('BINANCE:DASHUSDT',  type=input.symbol)
+s18 = input('BINANCE:ZILUSDT',  type=input.symbol)
+s19 = input('BINANCE:CELRUSDT',  type=input.symbol)
+s20 = input('BINANCE:EOSUSDT',  type=input.symbol) //EOSBTC
+
+
+
+
+a01 = security(s01, timeframe.period, cond)
+a02 = security(s02, timeframe.period, cond)
+a03 = security(s03, timeframe.period, cond)
+a04 = security(s04, timeframe.period, cond)
+a05 = security(s05, timeframe.period, cond)
+
+a06 = security(s06, timeframe.period, cond)
+a07 = security(s07, timeframe.period, cond)
+a08 = security(s08, timeframe.period, cond)
+a09 = security(s09, timeframe.period, cond)
+a10 = security(s10, timeframe.period, cond)
+
+a11 = security(s11, timeframe.period, cond)
+a12 = security(s12, timeframe.period, cond)
+a13 = security(s13, timeframe.period, cond)
+a14 = security(s14, timeframe.period, cond)
+a15 = security(s15, timeframe.period, cond)
+
+a16 = security(s16, timeframe.period, cond)
+a17 = security(s17, timeframe.period, cond)
+a18 = security(s18, timeframe.period, cond)
+a19 = security(s19, timeframe.period, cond)
+a20 = security(s20, timeframe.period, cond)
+
+
+
+as01 = security(s01, timeframe.period, condSSPP_)
+as02 = security(s02, timeframe.period, condSSPP_)
+as03 = security(s03, timeframe.period, condSSPP_)
+as04 = security(s04, timeframe.period, condSSPP_)
+as05 = security(s05, timeframe.period, condSSPP_)
+
+as06 = security(s06, timeframe.period, condSSPP_)
+as07 = security(s07, timeframe.period, condSSPP_)
+as08 = security(s08, timeframe.period, condSSPP_)
+as09 = security(s09, timeframe.period, condSSPP_)
+as10 = security(s10, timeframe.period, condSSPP_)
+
+as11 = security(s11, timeframe.period, condSSPP_)
+as12 = security(s12, timeframe.period, condSSPP_)
+as13 = security(s13, timeframe.period, condSSPP_)
+as14 = security(s14, timeframe.period, condSSPP_)
+as15 = security(s15, timeframe.period, condSSPP_)
+
+as16 = security(s16, timeframe.period, condSSPP_)
+as17 = security(s17, timeframe.period, condSSPP_)
+as18 = security(s18, timeframe.period, condSSPP_)
+as19 = security(s19, timeframe.period, condSSPP_)
+as20 = security(s20, timeframe.period, condSSPP_)
+
+
+
+cond01 = a01 == 1 ? 1 : a01 == -1 ? -1 : a01 == 2 ? 2 : a01 == -2 ? -2 :na
+cond02 = a02 == 1 ? 1 : a02 == -1 ? -1 : a02 == 2 ? 2 : a02 == -2 ? -2 :na
+cond03 = a03 == 1 ? 1 : a03 == -1 ? -1 : a03 == 2 ? 2 : a03 == -2 ? -2 :na
+cond04 = a04 == 1 ? 1 : a04 == -1 ? -1 : a04 == 2 ? 2 : a04 == -2 ? -2 :na
+cond05 = a05 == 1 ? 1 : a05 == -1 ? -1 : a05 == 2 ? 2 : a05 == -2 ? -2 :na
+
+cond06 = a06 == 1 ? 1 : a06 == -1 ? -1 : a06 == 2 ? 2 : a06 == -2 ? -2 :na
+cond07 = a07 == 1 ? 1 : a07 == -1 ? -1 : a07 == 2 ? 2 : a07 == -2 ? -2 :na
+cond08 = a08 == 1 ? 1 : a08 == -1 ? -1 : a08 == 2 ? 2 : a08 == -2 ? -2 :na
+cond09 = a09 == 1 ? 1 : a09 == -1 ? -1 : a09 == 2 ? 2 : a09 == -2 ? -2 :na
+cond10 = a10 == 1 ? 1 : a10 == -1 ? -1 : a10 == 2 ? 2 : a10 == -2 ? -2 :na
+
+cond11 = a11 == 1 ? 1 : a11 == -1 ? -1 : a11 == 2 ? 2 : a11 == -2 ? -2 :na
+cond12 = a12 == 1 ? 1 : a12 == -1 ? -1 : a12 == 2 ? 2 : a12 == -2 ? -2 :na
+cond13 = a13 == 1 ? 1 : a13 == -1 ? -1 : a13 == 2 ? 2 : a13 == -2 ? -2 :na
+cond14 = a14 == 1 ? 1 : a14 == -1 ? -1 : a14 == 2 ? 2 : a14 == -2 ? -2 :na
+cond15 = a15 == 1 ? 1 : a15 == -1 ? -1 : a15 == 2 ? 2 : a15 == -2 ? -2 :na
+
+cond16 = a16 == 1 ? 1 : a16 == -1 ? -1 : a16 == 2 ? 2 : a16 == -2 ? -2 :na
+cond17 = a17 == 1 ? 1 : a17 == -1 ? -1 : a17 == 2 ? 2 : a17 == -2 ? -2 :na
+cond18 = a18 == 1 ? 1 : a18 == -1 ? -1 : a18 == 2 ? 2 : a18 == -2 ? -2 :na
+cond19 = a19 == 1 ? 1 : a19 == -1 ? -1 : a19 == 2 ? 2 : a19 == -2 ? -2 :na
+cond20 = a20 == 1 ? 1 : a20 == -1 ? -1 : a20 == 2 ? 2 : a20 == -2 ? -2 :na
+
+
+
+condSSPP01 = as01 == 1 ? 1 : as01 == -1 ? -1 :na
+condSSPP02 = as02 == 1 ? 1 : as02 == -1 ? -1 :na
+condSSPP03 = as03 == 1 ? 1 : as03 == -1 ? -1 :na
+condSSPP04 = as04 == 1 ? 1 : as04 == -1 ? -1 :na
+condSSPP05 = as05 == 1 ? 1 : as05 == -1 ? -1 :na
+
+condSSPP06 = as06 == 1 ? 1 : as06 == -1 ? -1 :na
+condSSPP07 = as07 == 1 ? 1 : as07 == -1 ? -1 :na
+condSSPP08 = as08 == 1 ? 1 : as08 == -1 ? -1 :na
+condSSPP09 = as09 == 1 ? 1 : as09 == -1 ? -1 :na
+condSSPP10 = as10 == 1 ? 1 : as10 == -1 ? -1 :na
+
+condSSPP11 = as11 == 1 ? 1 : as11 == -1 ? -1 :na
+condSSPP12 = as12 == 1 ? 1 : as12 == -1 ? -1 :na
+condSSPP13 = as13 == 1 ? 1 : as13 == -1 ? -1 :na
+condSSPP14 = as14 == 1 ? 1 : as14 == -1 ? -1 :na
+condSSPP15 = as15 == 1 ? 1 : as15 == -1 ? -1 :na
+
+condSSPP16 = as16 == 1 ? 1 : as16 == -1 ? -1 :na
+condSSPP17 = as17 == 1 ? 1 : as17 == -1 ? -1 :na
+condSSPP18 = as18 == 1 ? 1 : as18 == -1 ? -1 :na
+condSSPP19 = as19 == 1 ? 1 : as19 == -1 ? -1 :na
+condSSPP20 = as20 == 1 ? 1 : as20 == -1 ? -1 :na
+
+
+
+alertcondition(cond01 == 1, title='Buy BTCEUR', message='Buy BTCEUR')
+alertcondition(cond04 == 1, title='Buy LINKBTC', message='Buy XRPBTC')
+
+text01 = a01 == 1  ? "▲ StrongLong" : a01 == -1  ? "▼ StrongShort" : a01 == 2 ? "▲ Long" : a01 == -2 ? "▼ Short" :"■ Neutral"
+text02 = a02 == 1  ? "▲ StrongLong" : a02 == -1  ? "▼ StrongShort" : a02 == 2 ? "▲ Long" : a02 == -2 ? "▼ Short" :"■ Neutral"
+text03 = a03 == 1  ? "▲ StrongLong" : a03 == -1  ? "▼ StrongShort" : a03 == 2 ? "▲ Long" : a03 == -2 ? "▼ Short" :"■ Neutral"
+text04 = a04 == 1  ? "▲ StrongLong" : a04 == -1  ? "▼ StrongShort" : a04 == 2 ? "▲ Long" : a04 == -2 ? "▼ Short" :"■ Neutral"
+text05 = a05 == 1  ? "▲ StrongLong" : a05 == -1  ? "▼ StrongShort" : a05 == 2 ? "▲ Long" : a05 == -2 ? "▼ Short" :"■ Neutral"
+
+text06 = a06 == 1  ? "▲ StrongLong" : a06 == -1  ? "▼ StrongShort" : a06 == 2 ? "▲ Long" : a06 == -2 ? "▼ Short" :"■ Neutral"
+text07 = a07 == 1  ? "▲ StrongLong" : a07 == -1  ? "▼ StrongShort" : a07 == 2 ? "▲ Long" : a07 == -2 ? "▼ Short" :"■ Neutral"
+text08 = a08 == 1  ? "▲ StrongLong" : a08 == -1  ? "▼ StrongShort" : a08 == 2 ? "▲ Long" : a08 == -2 ? "▼ Short" :"■ Neutral"
+text09 = a09 == 1  ? "▲ StrongLong" : a09 == -1  ? "▼ StrongShort" : a09 == 2 ? "▲ Long" : a09 == -2 ? "▼ Short" :"■ Neutral"
+text10 = a10 == 1  ? "▲ StrongLong" : a10 == -1  ? "▼ StrongShort" : a10 == 2 ? "▲ Long" : a10 == -2 ? "▼ Short" :"■ Neutral"
+
+text11 = a11 == 1  ? "▲ StrongLong" : a11 == -1  ? "▼ StrongShort" : a11 == 2 ? "▲ Long" : a11 == -2 ? "▼ Short" :"■ Neutral"
+text12 = a12 == 1  ? "▲ StrongLong" : a12 == -1  ? "▼ StrongShort" : a12 == 2 ? "▲ Long" : a12 == -2 ? "▼ Short" :"■ Neutral"
+text13 = a13 == 1  ? "▲ StrongLong" : a13 == -1  ? "▼ StrongShort" : a13 == 2 ? "▲ Long" : a13 == -2 ? "▼ Short" :"■ Neutral"
+text14 = a14 == 1  ? "▲ StrongLong" : a14 == -1  ? "▼ StrongShort" : a14 == 2 ? "▲ Long" : a14 == -2 ? "▼ Short" :"■ Neutral"
+text15 = a15 == 1  ? "▲ StrongLong" : a15 == -1  ? "▼ StrongShort" : a15 == 2 ? "▲ Long" : a15 == -2 ? "▼ Short" :"■ Neutral"
+
+text16 = a16 == 1  ? "▲ StrongLong" : a16 == -1  ? "▼ StrongShort" : a16 == 2 ? "▲ Long" : a16 == -2 ? "▼ Short" :"■ Neutral"
+text17 = a17 == 1  ? "▲ StrongLong" : a17 == -1  ? "▼ StrongShort" : a17 == 2 ? "▲ Long" : a17 == -2 ? "▼ Short" :"■ Neutral"
+text18 = a18 == 1  ? "▲ StrongLong" : a18 == -1  ? "▼ StrongShort" : a18 == 2 ? "▲ Long" : a18 == -2 ? "▼ Short" :"■ Neutral"
+text19 = a19 == 1  ? "▲ StrongLong" : a19 == -1  ? "▼ StrongShort" : a19 == 2 ? "▲ Long" : a19 == -2 ? "▼ Short" :"■ Neutral"
+text20 = a20 == 1  ? "▲ StrongLong" : a20 == -1  ? "▼ StrongShort" : a20 == 2 ? "▲ Long" : a20 == -2 ? "▼ Short" :"■ Neutral"
+
+
+
+
+
+col01 = a01 == 1  ? color.lime : a01 == -1  ? color.red : a01 == 2 ? color.teal : a01 == -2 ? color.orange :color.black
+col02 = a02 == 1  ? color.lime : a02 == -1  ? color.red : a02 == 2 ? color.teal : a02 == -2 ? color.orange :color.black
+col03 = a03 == 1  ? color.lime : a03 == -1  ? color.red : a03 == 2 ? color.teal : a03 == -2 ? color.orange :color.black
+col04 = a04 == 1  ? color.lime : a04 == -1  ? color.red : a04 == 2 ? color.teal : a04 == -2 ? color.orange :color.black
+col05 = a05 == 1  ? color.lime : a05 == -1  ? color.red : a05 == 2 ? color.teal : a05 == -2 ? color.orange :color.black
+
+col06 = a06 == 1  ? color.lime : a06 == -1  ? color.red : a06 == 2 ? color.teal : a06 == -2 ? color.orange :color.black
+col07 = a07 == 1  ? color.lime : a07 == -1  ? color.red : a07 == 2 ? color.teal : a07 == -2 ? color.orange :color.black
+col08 = a08 == 1  ? color.lime : a08 == -1  ? color.red : a08 == 2 ? color.teal : a08 == -2 ? color.orange :color.black
+col09 = a09 == 1  ? color.lime : a09 == -1  ? color.red : a09 == 2 ? color.teal : a09 == -2 ? color.orange :color.black
+col10 = a10 == 1  ? color.lime : a10 == -1  ? color.red : a10 == 2 ? color.teal : a10 == -2 ? color.orange :color.black
+
+col11 = a11 == 1  ? color.lime : a11 == -1  ? color.red : a11 == 2 ? color.teal : a11 == -2 ? color.orange :color.black
+col12 = a12 == 1  ? color.lime : a12 == -1  ? color.red : a12 == 2 ? color.teal : a12 == -2 ? color.orange :color.black
+col13 = a13 == 1  ? color.lime : a13 == -1  ? color.red : a13 == 2 ? color.teal : a13 == -2 ? color.orange :color.black
+col14 = a14 == 1  ? color.lime : a14 == -1  ? color.red : a14 == 2 ? color.teal : a14 == -2 ? color.orange :color.black
+col15 = a15 == 1  ? color.lime : a15 == -1  ? color.red : a15 == 2 ? color.teal : a15 == -2 ? color.orange :color.black
+
+col16 = a16 == 1  ? color.lime : a16 == -1  ? color.red : a16 == 2 ? color.teal : a16 == -2 ? color.orange :color.black
+col17 = a17 == 1  ? color.lime : a17 == -1  ? color.red : a17 == 2 ? color.teal : a17 == -2 ? color.orange :color.black
+col18 = a18 == 1  ? color.lime : a18 == -1  ? color.red : a18 == 2 ? color.teal : a18 == -2 ? color.orange :color.black
+col19 = a19 == 1  ? color.lime : a19 == -1  ? color.red : a19 == 2 ? color.teal : a19 == -2 ? color.orange :color.black
+col20 = a20 == 1  ? color.lime : a20 == -1  ? color.red : a20 == 2 ? color.teal : a20 == -2 ? color.orange :color.black
+
+
+//PANELS
+lapos_x = timenow + round(change(time)*12)
+f_geom(_pr_a, _id, _color)=>
+
+
+    var label la = na
+    var counter = 0
+    counter := counter + 1
+    str_counter = ""//tostring(counter, "#") + ": "
+    label.delete(la)
+    la := label.new(
+             x=lapos_x, y=ceil(_pr_a),
+             text=str_counter + _id, xloc=xloc.bar_time, yloc=yloc.price, color=_color,
+             style=label.style_labeldown, textcolor=color.black, size=size.small
+             )
+
+
+
+f_geom(0, s01 + ' - ' + text01, color.white)
+plotshape(col01 == color.teal or col01 == color.red or col01 == color.lime or col01 == color.orange or col01 == color.black ? 0 : na, title='Square 1', style=shape.square, location=location.absolute, color=col01, size = size.tiny)
+
+f_geom(1, s02 + ' - ' + text02, color.white)
+plotshape(col02 == color.teal or col02 == color.red or col02 == color.lime or col02 == color.orange or col02 == color.black ? 1 : na, title='Square 2', style=shape.square, location=location.absolute, color=col02, size = size.tiny)
+
+f_geom(2, s03 + ' - ' + text03, color.white)
+plotshape(col03 == color.teal or col03 == color.red or col03 == color.lime or col03 == color.orange or col03 == color.black ? 2 : na, title='Square 3', style=shape.square, location=location.absolute, color=col03, size = size.tiny)
+
+f_geom(3, s04 + ' - ' + text04, color.white)
+plotshape(col04 == color.teal or col04 == color.red or col04 == color.lime or col04 == color.orange or col04 == color.black ? 3 : na, title='Square 4', style=shape.square, location=location.absolute, color=col04, size = size.tiny)
+
+f_geom(4, s05 + ' - ' + text05, color.white)
+plotshape(col05 == color.teal or col05 == color.red or col05 == color.lime or col05 == color.orange or col05 == color.black ? 4 : na, title='Square 5', style=shape.square, location=location.absolute, color=col05, size = size.tiny)
+
+f_geom(5, s06 + ' - ' + text06, color.white)
+plotshape(col06 == color.teal or col06 == color.red or col06 == color.lime or col06 == color.orange or col06 == color.black ? 5 : na, title='Square 6', style=shape.square, location=location.absolute, color=col06, size = size.tiny)
+
+f_geom(6, s07 + ' - ' + text07, color.white)
+plotshape(col07 == color.teal or col07 == color.red or col07 == color.lime or col07 == color.orange or col07 == color.black ? 6 : na, title='Square 7', style=shape.square, location=location.absolute, color=col07, size = size.tiny)
+
+f_geom(7, s08 + ' - ' + text08, color.white)
+plotshape(col08 == color.teal or col08 == color.red or col08 == color.lime or col08 == color.orange or col08 == color.black ? 7 : na, title='Square 8', style=shape.square, location=location.absolute, color=col08, size = size.tiny)
+
+f_geom(8, s09 + ' - ' + text09, color.white)
+plotshape(col09 == color.teal or col09 == color.red or col09 == color.lime or col09 == color.orange or col09 == color.black ? 8 : na, title='Square 9', style=shape.square, location=location.absolute, color=col09, size = size.tiny)
+
+f_geom(9, s10 + ' - ' + text10, color.white)
+plotshape(col10 == color.teal or col10 == color.red or col10 == color.lime or col10 == color.orange or col10 == color.black ? 9 : na, title='Square 10', style=shape.square, location=location.absolute, color=col10, size = size.tiny)
+
+f_geom(10, s11 + ' - ' + text11, color.white)
+plotshape(col11 == color.teal or col11 == color.red or col11 == color.lime or col11 == color.orange or col11 == color.black ? 10 : na, title='Square 11', style=shape.square, location=location.absolute, color=col11, size = size.tiny)
+
+f_geom(11, s12 + ' - ' + text12, color.white)
+plotshape(col12 == color.teal or col12 == color.red or col12 == color.lime or col12 == color.orange or col12 == color.black ? 11 : na, title='Square 12', style=shape.square, location=location.absolute, color=col12, size = size.tiny)
+
+f_geom(12, s13 + ' - ' + text13, color.white)
+plotshape(col13 == color.teal or col13 == color.red or col13 == color.lime or col13 == color.orange or col13 == color.black ? 12 : na, title='Square 13', style=shape.square, location=location.absolute, color=col13, size = size.tiny)
+
+f_geom(13, s14 + ' - ' + text14, color.white)
+plotshape(col14 == color.teal or col14 == color.red or col14 == color.lime or col14 == color.orange or col14 == color.black ? 13 : na, title='Square 14', style=shape.square, location=location.absolute, color=col14, size = size.tiny)
+
+f_geom(14, s15 + ' - ' + text15, color.white)
+plotshape(col15 == color.teal or col15 == color.red or col15 == color.lime or col15 == color.orange or col15 == color.black ? 14 : na, title='Square 15', style=shape.square, location=location.absolute, color=col15, size = size.tiny)
+
+f_geom(15, s16 + ' - ' + text16, color.white)
+plotshape(col16 == color.teal or col16 == color.red or col16 == color.lime or col16 == color.orange or col16 == color.black ? 15 : na, title='Square 16', style=shape.square, location=location.absolute, color=col16, size = size.tiny)
+
+f_geom(16, s17 + ' - ' + text17, color.white)
+plotshape(col17 == color.teal or col17 == color.red or col17 == color.lime or col17 == color.orange or col17 == color.black ? 16 : na, title='Square 17', style=shape.square, location=location.absolute, color=col17, size = size.tiny)
+
+f_geom(17, s18 + ' - ' + text18, color.white)
+plotshape(col18 == color.teal or col18 == color.red or col18 == color.lime or col18 == color.orange or col18 == color.black ? 17 : na, title='Square 18', style=shape.square, location=location.absolute, color=col18, size = size.tiny)
+
+f_geom(18, s19 + ' - ' + text19, color.white)
+plotshape(col19 == color.teal or col19 == color.red or col19 == color.lime or col19 == color.orange or col19 == color.black ? 18 : na, title='Square 19', style=shape.square, location=location.absolute, color=col19, size = size.tiny)
+
+f_geom(19, s20 + ' - ' + text20, color.white)
+plotshape(col20 == color.teal or col20 == color.red or col20 == color.lime or col20 == color.orange or col20 == color.black ? 19 : na, title='Square 20', style=shape.square, location=location.absolute, color=col20, size = size.tiny)
+
+
+pu01 = (col01 == color.teal or col01 == color.lime) and condSSPP01 == -1? s01 + "\n" + "\n": na
+pu02 = (col02 == color.teal or col02 == color.lime) and condSSPP02 == -1? s02 + "\n" + "\n": na
+pu03 = (col03 == color.teal or col03 == color.lime) and condSSPP03 == -1? s03 + "\n" + "\n": na
+pu04 = (col04 == color.teal or col04 == color.lime) and condSSPP04 == -1? s04 + "\n" + "\n": na
+pu05 = (col05 == color.teal or col05 == color.lime) and condSSPP05 == -1? s05 + "\n" + "\n": na
+pu06 = (col06 == color.teal or col06 == color.lime) and condSSPP06 == -1? s06 + "\n" + "\n": na
+pu07 = (col07 == color.teal or col07 == color.lime) and condSSPP07 == -1? s07 + "\n" + "\n": na
+pu08 = (col08 == color.teal or col08 == color.lime) and condSSPP08 == -1? s08 + "\n" + "\n": na
+pu09 = (col09 == color.teal or col09 == color.lime) and condSSPP09 == -1? s09 + "\n" + "\n": na
+pu10 = (col10 == color.teal or col10 == color.lime) and condSSPP10 == -1? s10 + "\n" + "\n": na
+pu11 = (col11 == color.teal or col11 == color.lime) and condSSPP11 == -1? s11 + "\n" + "\n": na
+pu12 = (col12 == color.teal or col12 == color.lime) and condSSPP12 == -1? s12 + "\n" + "\n": na
+pu13 = (col13 == color.teal or col13 == color.lime) and condSSPP13 == -1? s13 + "\n" + "\n": na
+pu14 = (col14 == color.teal or col14 == color.lime) and condSSPP14 == -1? s14 + "\n" + "\n": na
+pu15 = (col15 == color.teal or col15 == color.lime) and condSSPP15 == -1? s15 + "\n" + "\n": na
+pu16 = (col16 == color.teal or col16 == color.lime) and condSSPP16 == -1? s16 + "\n" + "\n": na
+pu17 = (col17 == color.teal or col17 == color.lime) and condSSPP17 == -1? s17 + "\n" + "\n": na
+pu18 = (col18 == color.teal or col18 == color.lime) and condSSPP18 == -1? s18 + "\n" + "\n": na
+pu19 = (col19 == color.teal or col19 == color.lime) and condSSPP19 == -1? s19 + "\n" + "\n": na
+pu20 = (col20 == color.teal or col20 == color.lime) and condSSPP20 == -1? s20 + "\n" + "\n": na
+
+
+
+
+p01 = col01 == color.black and condSSPP01 == -1 ? s01 + "\n" + "\n": na
+p02 = col02 == color.black and condSSPP02 == -1? s02 + "\n" + "\n": na
+p03 = col03 == color.black and condSSPP03 == -1? s03 + "\n" + "\n": na
+p04 = col04 == color.black and condSSPP04 == -1? s04 + "\n" + "\n": na
+p05 = col05 == color.black and condSSPP05 == -1? s05 + "\n" + "\n": na
+p06 = col06 == color.black and condSSPP06 == -1? s06 + "\n" + "\n": na
+p07 = col07 == color.black and condSSPP07 == -1? s07 + "\n" + "\n": na
+p08 = col08 == color.black and condSSPP08 == -1? s08 + "\n" + "\n": na
+p09 = col09 == color.black and condSSPP09 == -1? s09 + "\n" + "\n": na
+p10 = col10 == color.black and condSSPP10 == -1? s10 + "\n" + "\n": na
+p11 = col11 == color.black and condSSPP11 == -1? s11 + "\n" + "\n": na
+p12 = col12 == color.black and condSSPP12 == -1? s12 + "\n" + "\n": na
+p13 = col13 == color.black and condSSPP13 == -1? s13 + "\n" + "\n": na
+p14 = col14 == color.black and condSSPP14 == -1? s14 + "\n" + "\n": na
+p15 = col15 == color.black and condSSPP15 == -1? s15 + "\n" + "\n": na
+p16 = col16 == color.black and condSSPP16 == -1? s16 + "\n" + "\n": na
+p17 = col17 == color.black and condSSPP17 == -1? s17 + "\n" + "\n": na
+p18 = col18 == color.black and condSSPP18 == -1? s18 + "\n" + "\n": na
+p19 = col19 == color.black and condSSPP19 == -1? s19 + "\n" + "\n": na
+p20 = col20 == color.black and condSSPP20 == -1? s20 + "\n" + "\n": na
+
+
+po01 = (col01 == color.orange or col01 == color.red) and condSSPP01 == -1 ? s01 + "\n" + "\n": na
+po02 = (col02 == color.orange or col02 == color.red) and condSSPP02 == -1 ? s02 + "\n" + "\n": na
+po03 = (col03 == color.orange or col03 == color.red) and condSSPP03 == -1 ? s03 + "\n" + "\n": na
+po04 = (col04 == color.orange or col04 == color.red) and condSSPP04 == -1 ? s04 + "\n" + "\n": na
+po05 = (col05 == color.orange or col05 == color.red) and condSSPP05 == -1 ? s05 + "\n" + "\n": na
+po06 = (col06 == color.orange or col06 == color.red) and condSSPP06 == -1 ? s06 + "\n" + "\n": na
+po07 = (col07 == color.orange or col07 == color.red) and condSSPP07 == -1 ? s07 + "\n" + "\n": na
+po08 = (col08 == color.orange or col08 == color.red) and condSSPP08 == -1 ? s08 + "\n" + "\n": na
+po09 = (col09 == color.orange or col09 == color.red) and condSSPP09 == -1 ? s09 + "\n" + "\n": na
+po10 = (col10 == color.orange or col10 == color.red) and condSSPP10 == -1 ? s10 + "\n" + "\n": na
+po11 = (col11 == color.orange or col11 == color.red) and condSSPP11 == -1 ? s11 + "\n" + "\n": na
+po12 = (col12 == color.orange or col12 == color.red) and condSSPP12 == -1 ? s12 + "\n" + "\n": na
+po13 = (col13 == color.orange or col13 == color.red) and condSSPP13 == -1 ? s13 + "\n" + "\n": na
+po14 = (col14 == color.orange or col14 == color.red) and condSSPP14 == -1 ? s14 + "\n" + "\n": na
+po15 = (col15 == color.orange or col15 == color.red) and condSSPP15 == -1 ? s15 + "\n" + "\n": na
+po16 = (col16 == color.orange or col16 == color.red) and condSSPP16 == -1 ? s16 + "\n" + "\n": na
+po17 = (col17 == color.orange or col17 == color.red) and condSSPP17 == -1 ? s17 + "\n" + "\n": na
+po18 = (col18 == color.orange or col18 == color.red) and condSSPP18 == -1 ? s18 + "\n" + "\n": na
+po19 = (col19 == color.orange or col19 == color.red) and condSSPP19 == -1 ? s19 + "\n" + "\n": na
+po20 = (col20 == color.orange or col20 == color.red) and condSSPP20 == -1 ? s20 + "\n" + "\n": na
+
+pTot = p01 + p02 + p03 + p04 + p05 + p06 + p07 + p08 + p09 + p10 + p11 + p12 + p13 + p14 + p15 + p16 + p17 + p18 + p19 + p20
+pToto = po01 + po02 + po03 + po04 + po05 + po06 + po07 + po08 + po09 + po10 + po11 + po12 + po13 + po14 + po15 + po16 + po17 + po18 + po19 + po20
+pTotu = pu01 + pu02 + pu03 + pu04 + pu05 + pu06 + pu07 + pu08 + pu09 + pu10 + pu11 + pu12 + pu13 + pu14 + pu15 + pu16 + pu17 + pu18 + pu19 + pu20
+
+
+
+
+
+
+//Draw Info Panel//
+laposs_x = timenow + round(change(time)*40)
+laposs_y = 20
+
+f_draw_infopanel(_x, _y, _line, _text)=>
+    _rep_text = ""
+    for _l = 0 to _line
+        _rep_text := _rep_text + "\n"
+    _rep_text := _rep_text + _text
+    var label _la = na
+    label.delete(_la)
+    _la := label.new(
+         x=_x, y=_y, 
+         text=_rep_text, xloc=xloc.bar_time, yloc=yloc.price, 
+         color=color.white, style=label.style_labelup, textcolor=color.black, size=size.normal)
+
+//Panel Text//
+f_draw_infopanel(laposs_x, laposs_y, 0, "Uptrend:" + "\n" + "\n" + pTotu + "\n" + "\n" + "Neutral:" + "\n" + "\n" + pTot + "\n" + "\n" + "Downtrend:" + "\n" + "\n" + pToto)
+
+
+
+
+
+
