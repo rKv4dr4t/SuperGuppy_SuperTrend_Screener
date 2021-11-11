@@ -54,7 +54,6 @@ AQUA = #00FFFFFF
 BLUE = #0000FFFF
 GRAY = #808080FF
 
-
 //Fast EMA
 emaF1 = ema(src, lenF1)
 emaF2 = ema(src, lenF2)
